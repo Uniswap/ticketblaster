@@ -33,6 +33,6 @@
     "prettier": "^2.8.8"
   },
   "lint-staged": {
-    "src": "eslint --fix src && prettier --write src"
+    "*.{ts,tsx}": ["eslint --fix src", "prettier --write src"]
   }
 }
