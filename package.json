@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@types/node": "20.3.2",
@@ -25,7 +26,13 @@
     "@typescript-eslint/parser": "^5.60.1",
     "eslint": "^8.43.0",
     "eslint-config-next": "^13.4.7",
+    "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-react": "^7.32.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.3",
     "prettier": "^2.8.8"
+  },
+  "lint-staged": {
+    "**/*": "eslint --fix src && prettier --write --ignore-unknown src"
   }
 }
