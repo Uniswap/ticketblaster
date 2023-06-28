@@ -33,6 +33,13 @@
     "prettier": "^2.8.8"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["eslint --fix src", "prettier --write src"]
+    "*.{ts,tsx}": ["eslint --fix .", "prettier --write ."]
+  },
+  "prettier": {
+    "semi": false,
+    "trailingComma": "all",
+    "singleQuote": true,
+    "printWidth": 80,
+    "tabWidth": 2
   }
 }
