@@ -33,6 +33,6 @@
     "prettier": "^2.8.8"
   },
   "lint-staged": {
-    "**/*": "eslint --fix src && prettier --write --ignore-unknown src"
+    "src": "eslint --fix src && prettier --write src"
   }
 }
