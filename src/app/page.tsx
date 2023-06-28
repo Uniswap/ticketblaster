@@ -5,5 +5,5 @@ export default function Home() {
         asdf
       </div>
     </main>
-  );
+  )
 }

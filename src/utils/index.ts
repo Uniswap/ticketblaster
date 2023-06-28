@@ -1,3 +1,3 @@
 export function noop() {
-  console.log("nooap");
+  console.log('nooap')
 }
