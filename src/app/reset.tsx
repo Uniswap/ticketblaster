@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import styles from '../styles/Index.module.scss'
 
 export default function Reset() {
-  const reset = useCallback(() => fetch('/reset', { method: 'POST' }), [])
+  const reset = useCallback(() => fetch('/used', { method: 'DELETE' }), [])
 
   return (
     <button
