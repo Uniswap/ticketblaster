@@ -109,12 +109,14 @@
 
 .video {
   width: 100vw;
+  min-height: 480px;
   z-index: 0;
 }
 
 .metadata {
   background-color: rgba(0, 0, 0, 0.3);
-  font-size: 12px;
+  border-radius: 5%;
+  font-size: 16px;
   padding: 12px;
   width: 80vw;
   z-index: 2;

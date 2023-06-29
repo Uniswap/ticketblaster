@@ -5,7 +5,7 @@ import QrCodeReader from './qr_code_reader'
 import styles from './scan.module.scss'
 
 const enum Status {
-  Unknown = 'unknown',
+  Ready = 'ready',
   Pending = 'pending',
   Valid = 'valid',
   Invalid = 'invalid',
@@ -14,10 +14,10 @@ const enum Status {
 
 export default function Scan() {
   const [data, setData] = useState<string>()
-  const [status, setStatus] = useState<Status>(Status.Unknown)
+  const [status, setStatus] = useState<Status>(Status.Ready)
   const resetStatus = useCallback(() => {
     setData(undefined)
-    setStatus(Status.Unknown)
+    setStatus(Status.Ready)
   }, [])
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function Scan() {
       ].join(' ')}
     >
       <h1 className={styles.title}>Scan Ticket</h1>
-      <h2>status {status}</h2>
+
       <QrCodeReader onData={setData} onError={console.warn} />
       <div
         className={[
@@ -73,7 +73,7 @@ export default function Scan() {
       />
 
       <div className={styles.metadata}>
-        {status === Status.Unknown && <p>Scan a ticket to validate it</p>}
+        {status === Status.Ready && <p>Scan a ticket to validate it</p>}
         {status === Status.Pending && <p>Validating ticket</p>}
         {status === Status.Valid && <p onClick={resetStatus}>Valid ticket</p>}
         {status === Status.Invalid && (
