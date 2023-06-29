@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import QrCodeReader from './qr_code_reader'
+import styles from './scan.module.scss'
 
 export default function Scan() {
   const [data, setData] = useState<unknown | Error | null>(null)
@@ -22,9 +23,18 @@ export default function Scan() {
     console.log(data)
   }, [data])
 
+  const scanHoleClasses = [styles.scannerHole, styles.targetBorder]
+
+  if (data) {
+    scanHoleClasses.push(styles.success)
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className={styles.wrapper}>
       <QrCodeReader onData={onData} onError={console.warn} />
+      <div className={styles.scannerOverlay}>
+        <div className={scanHoleClasses.join(' ')} />
+      </div>
     </main>
   )
 }

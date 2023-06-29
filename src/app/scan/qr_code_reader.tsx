@@ -1,14 +1,13 @@
-'use client'
-
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import BarcodeDetector from 'barcode-detector'
 import useAnimationFrame from '@/hooks/useAnimationFrame'
+import BarcodeDetector from 'barcode-detector'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import styles from './scan.module.scss'
 
 const CANVAS_DIMENSION = 200
 
 interface QrCodeProps {
   onData: (data: string) => void
-  onError: (error: Error) => void
+  onError: (error: unknown) => void
 }
 
 export default function QrCodeReader({ onData, onError }: QrCodeProps) {
@@ -16,7 +15,6 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
   const [context, setContext] = useState<CanvasRenderingContext2D | null>()
   const [video, setVideo] = useState<HTMLVideoElement | null>()
   const [media, setMedia] = useState<MediaStream>()
-  const [data, setData] = useState<string>()
 
   const requestVideo = useCallback(() => {
     navigator.mediaDevices
@@ -44,6 +42,7 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
     () => new BarcodeDetector({ formats: ['qr_code'] }),
     [],
   )
+
   const detect = useCallback(async () => {
     if (!context || !media || !video) return
     context.clearRect(0, 0, CANVAS_DIMENSION, CANVAS_DIMENSION)
@@ -51,17 +50,13 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
     const image = context.getImageData(0, 0, CANVAS_DIMENSION, CANVAS_DIMENSION)
     try {
       const [barcode] = await detector.detect(image)
-      if (barcode) setData(barcode.rawValue)
-    } catch (reason) {
-      console.warn(reason)
+      if (barcode) onData(barcode.rawValue)
+    } catch (error) {
+      onError(error)
     }
-  }, [canvas, detector, media, video])
-  useAnimationFrame(detect)
+  }, [context, detector, media, video, onData, onError])
 
-  useEffect(() => {
-    if (!data) return
-    onData(data)
-  }, [data])
+  useAnimationFrame(detect)
 
   return (
     <>
@@ -71,7 +66,7 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
         height={CANVAS_DIMENSION}
         ref={setCanvas}
       />
-      <video playsInline autoPlay className="w-full h-full" ref={setVideo} />
+      <video playsInline autoPlay ref={setVideo} className={styles.video} />
     </>
   )
 }
