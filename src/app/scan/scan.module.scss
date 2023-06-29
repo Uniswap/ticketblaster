@@ -1,0 +1,86 @@
+.wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.scannerOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.scannerHole {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  margin-top: -100px;
+  /* Half the height */
+  margin-left: -100px;
+  /* Half the width */
+  background-color: transparent;
+  /* Makes the hole transparent */
+  box-shadow: 0 0 0 10000px rgba(0, 0, 0, 0.7);
+  /* Creates the overlay */
+  border-radius: 5%;
+  /* Optionally, to create slightly rounded corners for the hole */
+}
+
+@keyframes flash {
+
+  0%,
+  100% {
+    border-color: transparent;
+  }
+
+  50% {
+    border-color: var(--green);
+  }
+}
+
+.targetBorder {
+  border: 10px solid transparent;
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 20%;
+    height: 20%;
+    border: 10px solid transparent;
+    animation: flash 0.5s linear 5;
+    border-top-left-radius: 5%;
+    border-bottom-right-radius: 5%;
+  }
+
+  &::before {
+    top: 0;
+    left: 0;
+    border-bottom: none;
+    border-right: none;
+  }
+
+  &::after {
+    right: 0;
+    bottom: 0;
+    border-top: none;
+    border-left: none;
+  }
+}
+
+.video {
+  width: 100vw;
+}
