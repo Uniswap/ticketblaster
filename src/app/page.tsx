@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import styles from '../styles/Index.module.scss'
-import { ClearDB } from './clearDB'
+import Reset from './reset'
 
 export default function Home() {
   return (
@@ -16,7 +16,7 @@ export default function Home() {
       <Link className={styles.link} href="/scan">
         Scan
       </Link>
-      <ClearDB />
+      <Reset />
     </main>
   )
 }

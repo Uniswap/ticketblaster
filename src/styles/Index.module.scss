@@ -19,3 +19,22 @@
     color: var(--white);
   }
 }
+
+.button {
+  background: transparent;
+  border: none;
+  color: var(--white);
+  text-decoration: underline;
+  margin: 14px;
+
+  &:hover,
+  &:focus {
+    color: var(--white);
+  }
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
