@@ -126,3 +126,11 @@
     text-align: center;
   }
 }
+
+.switchView {
+  bottom: 1em;
+  cursor: pointer;
+  position: absolute;
+  right: 1em;
+  z-index: 2;
+}
