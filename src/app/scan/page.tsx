@@ -18,15 +18,25 @@ export default function Scan() {
 
   useEffect(() => {
     if (data) {
-      fetch('/api/validate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: data,
-      })
-        .then((res) => setStatus(res.ok ? Status.Valid : Status.Invalid))
-        .catch(() => setStatus(Status.Error))
+      try {
+        const json = JSON.parse(data)
+        /* TODO
+         * const { signature, ticket } = json
+         * const { address, id } = ticket
+         */
+        const signature = json // because I have a test signature
+        const address = '0x01234'
+        const id = 42
+        fetch(`/validate/${address}/${id}`, {
+          method: 'POST',
+          body: JSON.stringify(signature),
+        })
+          .then((res) => setStatus(res.ok ? Status.Valid : Status.Invalid))
+          .catch(() => setStatus(Status.Error))
+      } catch (error) {
+        console.warn('Invalid QR code:', error)
+        return
+      }
     }
   }, [data])
 
