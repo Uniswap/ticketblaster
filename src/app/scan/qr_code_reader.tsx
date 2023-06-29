@@ -14,7 +14,10 @@ interface QrCodeProps {
 export default function QrCodeReader({ onData, onError }: QrCodeProps) {
   const video = useRef<HTMLVideoElement | null>(null)
   const canvas = useRef<HTMLCanvasElement | null>(null)
-  const detector = useMemo<BarcodeDetector>( () => new BarcodeDetector({ formats: ['qr_code'] }), [])
+  const detector = useMemo<BarcodeDetector>(
+    () => new BarcodeDetector({ formats: ['qr_code'] }),
+    [],
+  )
 
   /**
    * Requests a video stream from the user's camera.
@@ -37,7 +40,9 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
   const detect = useCallback(async () => {
     assert(video.current, 'video ref is null')
     assert(canvas.current, 'canvas ref is null')
-    const context = canvas.current.getContext('2d', { willReadFrequently: true })
+    const context = canvas.current.getContext('2d', {
+      willReadFrequently: true,
+    })
     assert(context, 'canvas context is null')
     context.clearRect(0, 0, DIMENSION, DIMENSION)
     context.drawImage(video.current, 0, 0, DIMENSION, DIMENSION)
@@ -55,12 +60,7 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
 
   return (
     <>
-      <canvas
-        hidden
-        ref={canvas}
-        width={DIMENSION}
-        height={DIMENSION}
-      />
+      <canvas hidden ref={canvas} width={DIMENSION} height={DIMENSION} />
       <video
         playsInline
         autoPlay
