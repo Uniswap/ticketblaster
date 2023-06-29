@@ -24,17 +24,18 @@ export default function Scan() {
     if (data) {
       try {
         const json = JSON.parse(data)
-        /* TODO
-         * const { signature, owner, address, id} = json
-         */
-        const signature = json // because I have a test signature
-        const owner = '0x74Aa01d162E6dC6A657caC857418C403D48E2D77'
-        const address = '0x0366c4fe5b9475afcb8ce7d94aac3668b6db8247'
-        const id = 1
+        console.log('QR code data:', json)
+        const { signature, owner, collectionAddress, tokenId } = json
+
         setStatus(Status.Pending)
         fetch(`/validate`, {
           method: 'POST',
-          body: JSON.stringify({ signature, owner, address, id }),
+          body: JSON.stringify({
+            signature,
+            owner,
+            address: collectionAddress,
+            id: tokenId,
+          }),
         })
           .then((res) => setStatus(res.ok ? Status.Valid : Status.Invalid))
           .catch(() => setStatus(Status.Error))

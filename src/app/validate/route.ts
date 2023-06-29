@@ -1,24 +1,33 @@
 import assert from 'assert'
 import { NextResponse } from 'next/server'
-import { Contract, InfuraProvider } from 'ethers'
-
+import { Contract, Interface, InfuraProvider } from 'ethers'
+import artifacts from '@openzeppelin/contracts/build/contracts/ERC1155.json'
+import { verifySignature } from './verifySignature'
 assert(process.env.INFURA_API_KEY, 'Missing INFURA_API_KEY')
 const infura = new InfuraProvider(1, process.env.INFURA_API_KEY)
 
-// https://eips.ethereum.org/EIPS/eip-1155#specification
-const abi = [
-  'function balanceOf(address _owner, uint256 _id) external view returns (uint256)',
-]
-
 export async function POST(request: Request) {
-  const { signature, owner, address, id } = await request.json()
+  const data = await request.json()
+  const { signature, owner, address, id } = data
+  if (!signature || !owner || !address || !id) {
+    return NextResponse.json({ reason: 'Malformed payload.' }, { status: 403 })
+  }
 
-  const contract = new Contract(address, abi, infura)
-  console.log(owner, id)
+  console.log('signature', signature)
+  console.log('owner', owner)
+  console.log('address', address)
+  console.log('id', id)
+  console.log('====================')
+
+  const interface1155 = new Interface(artifacts.abi)
+  const contract = new Contract(address, interface1155, infura)
   const balanceOf: bigint = await contract.balanceOf(owner, id)
+
   if (Number(balanceOf) !== 1) {
     return NextResponse.json({ reason: 'Not found' }, { status: 404 })
   }
+
+  verifySignature(data)
 
   // TODO: ecrecover to verify signature is from owner
   // return NextResponse.json({ reason: 'Invalid signature' }, { status: 403 })

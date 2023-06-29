@@ -1,0 +1,11 @@
+{
+  "signature": {
+    "owner": "0x74Aa01d162E6dC6A657caC857418C403D48E2D77",
+    "signature": "{\"s\":\"0x5601f8e129bc6274ce4b9a8a716b3fea7281b4326f7ec3505270825643c5817f\",\"r\":\"0xb6e72f6816b179c20abe72b12fc2edc8edb4db9cbba6d5f1c493c4fb0a31a3c6\",\"v\":27}",
+    "collectionAddress": "0x0366C4fE5b9475afCb8cE7d94AaC3668b6dB8247",
+    "tokenId": "1"
+  },
+  "owner": "0x74Aa01d162E6dC6A657caC857418C403D48E2D77",
+  "address": "0x0366c4fe5b9475afcb8ce7d94aac3668b6db8247",
+  "id": 1
+}
