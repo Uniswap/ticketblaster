@@ -10,6 +10,13 @@
   flex-direction: column;
 }
 
+.title {
+  font-size: 24px;
+  position: absolute;
+  top: 20%;
+  z-index: 2;
+}
+
 .scannerOverlay {
   position: absolute;
   top: 0;
@@ -24,15 +31,15 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: calc(60vw - 10px);
-  height: calc(60vw - 10px);
+  width: calc(75vw - 10px);
+  height: calc(75vw - 10px);
   transform: translate(-50%, -50%);
   background-color: transparent;
   box-shadow: 0 0 0 10000px rgba(0, 0, 0, 0.7);
   border-radius: 5%;
 }
 
-@keyframes flash {
+@keyframes flash-success {
 
   0%,
   100% {
@@ -44,6 +51,18 @@
   }
 }
 
+@keyframes flash-fail {
+
+  0%,
+  100% {
+    border-color: transparent;
+  }
+
+  50% {
+    border-color: red;
+  }
+}
+
 .targetBorder {
 
   &::before,
@@ -52,10 +71,17 @@
     position: absolute;
     width: 20%;
     height: 20%;
-    border: 10px solid transparent;
-    animation: flash 0.5s linear 5;
+    border: 5px solid white;
     border-top-left-radius: 5%;
     border-bottom-right-radius: 5%;
+
+    &.success {
+      animation: flash-success 1s infinite;
+    }
+
+    &.fail {
+      animation: flash-fail 1s infinite;
+    }
   }
 
   &::before {
@@ -75,4 +101,16 @@
 
 .video {
   width: 100vw;
+}
+
+.metadata {
+  background-color: rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+  padding: 12px;
+  width: 80vw;
+  z-index: 2;
+
+  &>p {
+    text-align: center;
+  }
 }
