@@ -1,9 +1,9 @@
-import useAnimationFrame from '@/hooks/useAnimationFrame'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import BarcodeDetector from 'barcode-detector'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import styles from './scan.module.scss'
 
-const CANVAS_DIMENSION = 200
+const VIDEO_DIMENSION = 480
+const SCAN_DIMENSION = 440
+const SCAN_RATE = 200
 
 interface QrCodeProps {
   onData: (data: string) => void
@@ -11,62 +11,95 @@ interface QrCodeProps {
 }
 
 export default function QrCodeReader({ onData, onError }: QrCodeProps) {
-  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>()
-  const [context, setContext] = useState<CanvasRenderingContext2D | null>()
-  const [video, setVideo] = useState<HTMLVideoElement | null>()
-  const [media, setMedia] = useState<MediaStream>()
-
-  const requestVideo = useCallback(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((stream) => {
-        stream.onremovetrack = () => setMedia(undefined)
-        setMedia(stream)
-      })
-      .catch(onError)
-  }, [onError])
-
-  useEffect(requestVideo, [requestVideo])
-  useEffect(() => {
-    if (!media || !video) return
-    video.srcObject = media
-  }, [media, video])
-
-  useEffect(() => {
-    if (!canvas) return
-    const context = canvas.getContext('2d', { willReadFrequently: true })!
-    setContext(context)
-  }, [canvas])
-
-  const detector = useMemo<BarcodeDetector>(
+  const video = useRef<HTMLVideoElement | null>(null)
+  const canvas = useRef<HTMLCanvasElement | null>(null)
+  const detector = useMemo(
     () => new BarcodeDetector({ formats: ['qr_code'] }),
     [],
   )
 
-  const detect = useCallback(async () => {
-    if (!context || !media || !video) return
-    context.clearRect(0, 0, CANVAS_DIMENSION, CANVAS_DIMENSION)
-    context.drawImage(video, 0, 0, CANVAS_DIMENSION, CANVAS_DIMENSION)
-    const image = context.getImageData(0, 0, CANVAS_DIMENSION, CANVAS_DIMENSION)
+  const scan = useCallback(async () => {
+    if (
+      !video.current ||
+      !canvas.current ||
+      !navigator.mediaDevices ||
+      !detector
+    )
+      return
+
+    const context = canvas.current.getContext('2d')
+    if (!context) return
+
+    context.drawImage(
+      video.current,
+      (VIDEO_DIMENSION - SCAN_DIMENSION) / 2,
+      (VIDEO_DIMENSION - SCAN_DIMENSION) / 2,
+      SCAN_DIMENSION,
+      SCAN_DIMENSION,
+      0,
+      0,
+      SCAN_DIMENSION,
+      SCAN_DIMENSION,
+    )
+
     try {
-      const [barcode] = await detector.detect(image)
+      const imageData = context.getImageData(
+        0,
+        0,
+        SCAN_DIMENSION,
+        SCAN_DIMENSION,
+      )
+      const [barcode] = await detector.detect(imageData)
       if (barcode) onData(barcode.rawValue)
     } catch (error) {
       onError(error)
     }
-  }, [context, detector, media, video, onData, onError])
+  }, [onData, onError, detector])
 
-  useAnimationFrame(detect)
+  useEffect(() => {
+    if (!navigator.mediaDevices || !video.current) return
+
+    const startVideo = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: VIDEO_DIMENSION, height: VIDEO_DIMENSION },
+        })
+        if (video.current) video.current.srcObject = stream
+      } catch (error) {
+        onError(error)
+      }
+    }
+
+    startVideo()
+
+    return () => {
+      if (video.current && video.current.srcObject) {
+        const tracks = (video.current.srcObject as MediaStream).getTracks()
+        tracks.forEach((track) => track.stop())
+      }
+    }
+  }, [onError])
+
+  useEffect(() => {
+    const intervalId = setInterval(scan, SCAN_RATE)
+    return () => clearInterval(intervalId)
+  }, [scan])
 
   return (
     <>
       <canvas
         hidden
-        width={CANVAS_DIMENSION}
-        height={CANVAS_DIMENSION}
-        ref={setCanvas}
+        ref={canvas}
+        width={SCAN_DIMENSION}
+        height={SCAN_DIMENSION}
       />
-      <video playsInline autoPlay ref={setVideo} className={styles.video} />
+      <video
+        playsInline
+        autoPlay
+        ref={video}
+        width={VIDEO_DIMENSION}
+        height={VIDEO_DIMENSION}
+      />
     </>
   )
 }

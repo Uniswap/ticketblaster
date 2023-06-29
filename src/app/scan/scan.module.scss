@@ -22,20 +22,13 @@
 
 .scannerHole {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200px;
-  height: 200px;
-  margin-top: -100px;
-  /* Half the height */
-  margin-left: -100px;
-  /* Half the width */
+  top: 80%;
+  left: 80%;
+  width: 440px;
+  height: 440px;
   background-color: transparent;
-  /* Makes the hole transparent */
   box-shadow: 0 0 0 10000px rgba(0, 0, 0, 0.7);
-  /* Creates the overlay */
   border-radius: 5%;
-  /* Optionally, to create slightly rounded corners for the hole */
 }
 
 @keyframes flash {
@@ -52,7 +45,6 @@
 
 .targetBorder {
   border: 10px solid transparent;
-  position: relative;
 
   &::before,
   &::after {
