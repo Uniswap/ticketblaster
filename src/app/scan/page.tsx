@@ -6,6 +6,7 @@ import styles from './scan.module.scss'
 
 const enum Status {
   Unknown = 'unknown',
+  Pending = 'pending',
   Valid = 'valid',
   Invalid = 'invalid',
   Error = 'error',
@@ -14,22 +15,26 @@ const enum Status {
 export default function Scan() {
   const [data, setData] = useState<string>()
   const [status, setStatus] = useState<Status>(Status.Unknown)
-  const resetStatus = useCallback(() => setStatus(Status.Unknown), [])
+  const resetStatus = useCallback(() => {
+    setData(undefined)
+    setStatus(Status.Unknown)
+  }, [])
 
   useEffect(() => {
     if (data) {
       try {
         const json = JSON.parse(data)
         /* TODO
-         * const { signature, ticket } = json
-         * const { address, id } = ticket
+         * const { signature, owner, address, id} = json
          */
         const signature = json // because I have a test signature
-        const address = '0x01234'
-        const id = 42
-        fetch(`/validate/${address}/${id}`, {
+        const owner = '0x74Aa01d162E6dC6A657caC857418C403D48E2D77'
+        const address = '0x0366c4fe5b9475afcb8ce7d94aac3668b6db8247'
+        const id = 1
+        setStatus(Status.Pending)
+        fetch(`/validate`, {
           method: 'POST',
-          body: JSON.stringify(signature),
+          body: JSON.stringify({ signature, owner, address, id }),
         })
           .then((res) => setStatus(res.ok ? Status.Valid : Status.Invalid))
           .catch(() => setStatus(Status.Error))
@@ -55,6 +60,7 @@ export default function Scan() {
       </div>
       <div className={styles.metadata}>
         {status === Status.Unknown && <p>Scan a ticket to validate it</p>}
+        {status === Status.Pending && <p>Validating ticket</p>}
         {status === Status.Valid && <p onClick={resetStatus}>Valid ticket</p>}
         {status === Status.Invalid && (
           <p onClick={resetStatus}>Invalid ticket</p>
