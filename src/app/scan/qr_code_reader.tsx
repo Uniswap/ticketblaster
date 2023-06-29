@@ -3,6 +3,8 @@ import BarcodeDetector from 'barcode-detector'
 import assert from 'assert'
 import useAnimationFrame from '@/hooks/useAnimationFrame'
 import styles from './scan.module.scss'
+import { RefreshCw } from 'react-feather'
+import useSupportsEnvironmentCamera from './useSupportsEnvironmentCamera'
 
 const SCAN_LINE_SIZE = 512
 
@@ -44,9 +46,11 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
       willReadFrequently: true,
     })
     assert(context, 'canvas context is null')
-    const dimensions = (video.current.srcObject as MediaStream | null)
-      ?.getVideoTracks()[0]
-      .getSettings()
+    const srcObject = video.current.srcObject as MediaStream | null
+    if (!srcObject) return
+
+    const dimensions = srcObject?.getVideoTracks()[0].getSettings()
+
     if (!dimensions) return
     const { width, height } = dimensions
     assert(width && height, 'video has no dimensions')
@@ -71,6 +75,38 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
     }
   }, [detector, onData, onError])
 
+  const supportsEnvironment = useSupportsEnvironmentCamera()
+
+  const toggleUserFacingOrEnvironmentCamera = useCallback(() => {
+    assert(video.current, 'video ref is null')
+
+    const stream = video.current.srcObject as MediaStream | null
+    if (!stream) return
+
+    const track = stream.getVideoTracks()[0]
+    const currentFacingMode = track.getSettings().facingMode
+    const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user'
+
+    // Stop the current track
+    track.stop()
+
+    // Request a new stream with the desired facing mode.
+    navigator.mediaDevices
+      .getUserMedia({
+        video: {
+          facingMode: newFacingMode,
+        },
+      })
+      .then((newStream) => {
+        assert(video.current, 'video ref is null')
+        // Replace the stream in the video element.
+        video.current.srcObject = newStream
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }, [video, supportsEnvironment])
+
   useEffect(requestMedia, [requestMedia])
   useAnimationFrame(detect)
 
@@ -83,6 +119,12 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
         height={SCAN_LINE_SIZE}
       />
       <video playsInline autoPlay ref={video} className={styles.video} />
+      {supportsEnvironment && (
+        <RefreshCw
+          className={styles.switchView}
+          onClick={toggleUserFacingOrEnvironmentCamera}
+        />
+      )}
     </>
   )
 }

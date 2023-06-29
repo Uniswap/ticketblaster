@@ -1,0 +1,206 @@
+diff --git a/package.json b/package.json
+index 20e1f51..0296954 100644
+--- a/package.json
++++ b/package.json
+@@ -16,6 +16,7 @@
+     "@types/node": "20.3.2",
+     "@types/react": "18.2.14",
+     "@types/react-dom": "18.2.6",
++    "@vercel/kv": "^0.2.2",
+     "autoprefixer": "10.4.14",
+     "barcode-detector": "^1.0.3",
+     "bufferutil": "^4.0.7",
+diff --git a/src/app/scan/page.tsx b/src/app/scan/page.tsx
+index 3220f08..fc29a44 100644
+--- a/src/app/scan/page.tsx
++++ b/src/app/scan/page.tsx
+@@ -21,6 +21,7 @@ export default function Scan() {
+   }, [])
+ 
+   useEffect(() => {
++    let handle: NodeJS.Timeout
+     if (data) {
+       try {
+         const json = JSON.parse(data)
+@@ -39,13 +40,16 @@ export default function Scan() {
+         })
+           .then((res) => setStatus(res.ok ? Status.Valid : Status.Invalid))
+           .catch(() => setStatus(Status.Error))
+-          .finally(() => setTimeout(resetStatus, 5000))
++          .finally(() => {
++            handle = setTimeout(resetStatus, 5000)
++          })
+       } catch (error) {
+         console.warn('Invalid QR code:', error)
+-        return
+       }
+     }
+-  }, [data])
++
++    return () => clearTimeout(handle)
++  }, [data, resetStatus])
+ 
+   return (
+     <main
+diff --git a/src/app/validate/route.ts b/src/app/validate/route.ts
+index 336c712..aca2691 100644
+--- a/src/app/validate/route.ts
++++ b/src/app/validate/route.ts
+@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
+ import { Contract, Interface, InfuraProvider } from 'ethers'
+ import artifacts from '@openzeppelin/contracts/build/contracts/ERC1155.json'
+ import { verifySignature } from './verifySignature'
++import { kv } from '@vercel/kv'
++
+ assert(process.env.INFURA_API_KEY, 'Missing INFURA_API_KEY')
+ const infura = new InfuraProvider(1, process.env.INFURA_API_KEY)
+ 
+@@ -10,37 +12,39 @@ export async function POST(request: Request) {
+   const data = await request.json()
+   const { signature, owner, address, id } = data
+   if (!signature || !owner || !address || !id) {
+-    return NextResponse.json({ reason: 'Malformed payload.' }, { status: 403 })
++    return NextResponse.json({ reason: 'Malformed payload' }, { status: 400 })
+   }
+ 
+-  console.log('signature', signature)
+-  console.log('owner', owner)
+-  console.log('address', address)
+-  console.log('id', id)
+-  console.log('====================')
+-
+   const interface1155 = new Interface(artifacts.abi)
+   const contract = new Contract(address, interface1155, infura)
+   const balanceOf: bigint = await contract.balanceOf(owner, id)
+-
+   if (Number(balanceOf) !== 1) {
+     return NextResponse.json({ reason: 'Not found' }, { status: 404 })
+   }
+ 
+-  let verifiedAddress = ''
+   try {
+-    verifiedAddress = verifySignature(data)
+-    console.log('address', address)
++    const verifiedOwner = verifySignature(data)
++    console.log(verifiedOwner, owner)
++    if (verifiedOwner !== owner) {
++      return NextResponse.json({ reason: 'Thief!' }, { status: 401 })
++    }
+   } catch (e) {
+-    console.error(e)
++    console.warn('Signature verification failed', e)
+     return NextResponse.json({ reason: 'Invalid signature' }, { status: 403 })
+   }
+ 
+-  // try {
+-  //   todo: database check
+-  // } catch (e) {
+-  //   return NextResponse.json({ reason: 'Already checked in' }, { status: 409 })
+-  // }
++  const used = await kv.get(`used:${address}/${id}`)
++  console.log(used)
++  if (used) {
++    return NextResponse.json({ reason: 'Already checked in' }, { status: 409 })
++  }
+ 
+-  return NextResponse.json({}, { status: 200 })
++  try {
++    const result = await kv.set(`used:${address}/${id}`, true)
++    if (result !== 'OK') throw new Error('Failed to write')
++    return NextResponse.json({}, { status: 200 })
++  } catch (e) {
++    console.warn('KV update failed', e)
++    return NextResponse.json({ reason: 'Failed to check in' }, { status: 500 })
++  }
+ }
+diff --git a/yarn.lock b/yarn.lock
+index e0f7f80..467b5f5 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -524,6 +524,20 @@
+     "@typescript-eslint/types" "5.60.1"
+     eslint-visitor-keys "^3.3.0"
+ 
++"@upstash/redis@1.21.0":
++  version "1.21.0"
++  resolved "https://registry.yarnpkg.com/@upstash/redis/-/redis-1.21.0.tgz#a1096f096800032d65b5d819aa2c60af3011b9e8"
++  integrity sha512-c6M+cl0LOgGK/7Gp6ooMkIZ1IDAJs8zFR+REPkoSkAq38o7CWFX5FYwYEqGZ6wJpUGBuEOr/7hTmippXGgL25A==
++  dependencies:
++    isomorphic-fetch "^3.0.0"
++
++"@vercel/kv@^0.2.2":
++  version "0.2.2"
++  resolved "https://registry.yarnpkg.com/@vercel/kv/-/kv-0.2.2.tgz#4b01c2bfd0aad674598b4d89a38a9454fa945a15"
++  integrity sha512-mqnQOB6bkp4h5eObxfLNIlhlVqOGSH8cWOlC5pDVWTjX3zL8dETO1ZBl6M74HBmeBjbD5+J7wDJklRigY6UNKw==
++  dependencies:
++    "@upstash/redis" "1.21.0"
++
+ "@zxing/library@^0.18.4":
+   version "0.18.6"
+   resolved "https://registry.yarnpkg.com/@zxing/library/-/library-0.18.6.tgz#717af8c6c1fd982865e21051afdd7b470ae6674c"
+@@ -1933,6 +1947,14 @@ isexe@^2.0.0:
+   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
+   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
+ 
++isomorphic-fetch@^3.0.0:
++  version "3.0.0"
++  resolved "https://registry.yarnpkg.com/isomorphic-fetch/-/isomorphic-fetch-3.0.0.tgz#0267b005049046d2421207215d45d6a262b8b8b4"
++  integrity sha512-qvUtwJ3j6qwsF3jLxkZ72qCgjMysPzDfeV240JHiGZsANBYd+EEuu35v7dfrJ9Up0Ak07D7GGSkGhCHTqg/5wA==
++  dependencies:
++    node-fetch "^2.6.1"
++    whatwg-fetch "^3.4.1"
++
+ jotai@^2.2.1:
+   version "2.2.1"
+   resolved "https://registry.yarnpkg.com/jotai/-/jotai-2.2.1.tgz#0a95b88c5f3ea4fd656b5f79af6f84e895f84f5a"
+@@ -2180,6 +2202,13 @@ next@13.4.7:
+     "@next/swc-win32-ia32-msvc" "13.4.7"
+     "@next/swc-win32-x64-msvc" "13.4.7"
+ 
++node-fetch@^2.6.1:
++  version "2.6.11"
++  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.11.tgz#cde7fc71deef3131ef80a738919f999e6edfff25"
++  integrity sha512-4I6pdBY1EthSqDmJkiNk3JIT8cswwR9nfeW/cPdUagJYEQG7R95WRH74wpz7ma8Gh/9dI9FP+OU+0E4FvtA55w==
++  dependencies:
++    whatwg-url "^5.0.0"
++
+ node-gyp-build@^4.3.0:
+   version "4.6.0"
+   resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.6.0.tgz#0c52e4cbf54bbd28b709820ef7b6a3c2d6209055"
+@@ -2818,6 +2847,11 @@ to-regex-range@^5.0.1:
+   dependencies:
+     is-number "^7.0.0"
+ 
++tr46@~0.0.3:
++  version "0.0.3"
++  resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
++  integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
++
+ ts-custom-error@^3.0.0:
+   version "3.3.1"
+   resolved "https://registry.yarnpkg.com/ts-custom-error/-/ts-custom-error-3.3.1.tgz#8bd3c8fc6b8dc8e1cb329267c45200f1e17a65d1"
+@@ -2931,6 +2965,24 @@ watchpack@2.4.0:
+     glob-to-regexp "^0.4.1"
+     graceful-fs "^4.1.2"
+ 
++webidl-conversions@^3.0.0:
++  version "3.0.1"
++  resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-3.0.1.tgz#24534275e2a7bc6be7bc86611cc16ae0a5654871"
++  integrity sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==
++
++whatwg-fetch@^3.4.1:
++  version "3.6.2"
++  resolved "https://registry.yarnpkg.com/whatwg-fetch/-/whatwg-fetch-3.6.2.tgz#dced24f37f2624ed0281725d51d0e2e3fe677f8c"
++  integrity sha512-bJlen0FcuU/0EMLrdbJ7zOnW6ITZLrZMIarMUVmdKtsGvZna8vxKYaexICWPfZ8qwf9fzNq+UEIZrnSaApt6RA==
++
++whatwg-url@^5.0.0:
++  version "5.0.0"
++  resolved "https://registry.yarnpkg.com/whatwg-url/-/whatwg-url-5.0.0.tgz#966454e8765462e37644d3626f6742ce8b70965d"
++  integrity sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==
++  dependencies:
++    tr46 "~0.0.3"
++    webidl-conversions "^3.0.0"
++
+ which-boxed-primitive@^1.0.2:
+   version "1.0.2"
+   resolved "https://registry.yarnpkg.com/which-boxed-primitive/-/which-boxed-primitive-1.0.2.tgz#13757bc89b209b049fe5d86430e21cf40a89a8e6"

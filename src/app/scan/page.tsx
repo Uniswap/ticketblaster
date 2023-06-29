@@ -21,6 +21,7 @@ export default function Scan() {
   }, [])
 
   useEffect(() => {
+    let handle: NodeJS.Timeout
     if (data) {
       try {
         const json = JSON.parse(data)
@@ -39,13 +40,16 @@ export default function Scan() {
         })
           .then((res) => setStatus(res.ok ? Status.Valid : Status.Invalid))
           .catch(() => setStatus(Status.Error))
-          .finally(() => setTimeout(resetStatus, 5000))
+          .finally(() => {
+            handle = setTimeout(resetStatus, 5000)
+          })
       } catch (error) {
         console.warn('Invalid QR code:', error)
-        return
       }
     }
-  }, [data])
+
+    return () => clearTimeout(handle)
+  }, [data, resetStatus])
 
   return (
     <main
