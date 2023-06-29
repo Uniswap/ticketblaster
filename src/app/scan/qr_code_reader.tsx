@@ -105,7 +105,7 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
       .catch((err) => {
         console.error(err)
       })
-  }, [video, supportsEnvironment])
+  }, [video])
 
   useEffect(requestMedia, [requestMedia])
   useAnimationFrame(detect)
