@@ -1,19 +1,21 @@
 .wrapper {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  align-items: center;
   background-color: var(--black);
   display: flex;
-  align-items: center;
-  justify-content: center;
   flex-direction: column;
+  height: 100vh;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  width: 100vw;
+
+  &>* {
+    margin: 0;
+  }
 }
 
 .title {
   font-size: 24px;
-  position: absolute;
-  top: 20%;
   z-index: 2;
 }
 
@@ -32,7 +34,9 @@
   top: 50%;
   left: 50%;
   width: calc(75vw - 10px);
+  max-width: 480px;
   height: calc(75vw - 10px);
+  max-height: 480px;
   transform: translate(-50%, -50%);
   background-color: transparent;
   box-shadow: 0 0 0 10000px rgba(0, 0, 0, 0.7);
@@ -101,6 +105,7 @@
 
 .video {
   width: 100vw;
+  z-index: 0;
 }
 
 .metadata {
@@ -110,7 +115,8 @@
   width: 80vw;
   z-index: 2;
 
-  &>p {
+  &>* {
+    margin: 0;
     text-align: center;
   }
 }
