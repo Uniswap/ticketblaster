@@ -27,13 +27,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ reason: 'Not found' }, { status: 404 })
   }
 
-  verifySignature(data)
+  try {
+    const verifyResult = verifySignature(data)
+    console.log('verifyResult', verifyResult)
+  } catch (e) {
+    console.error(e)
+    return NextResponse.json({ reason: 'Invalid signature' }, { status: 403 })
+  }
 
-  // TODO: ecrecover to verify signature is from owner
-  // return NextResponse.json({ reason: 'Invalid signature' }, { status: 403 })
-
-  // TODO: check against database
-  // return NextResponse.json({ reason: 'Already checked in' }, { status: 409 })
+  // try {
+  //   todo: database check
+  // } catch (e) {
+  //   return NextResponse.json({ reason: 'Already checked in' }, { status: 409 })
+  // }
 
   return NextResponse.json({}, { status: 200 })
 }

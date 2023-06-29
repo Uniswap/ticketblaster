@@ -45,14 +45,16 @@
     border: 5px solid white;
     border-top-left-radius: 5%;
     border-bottom-right-radius: 5%;
+  }
 
-    &.success {
-      animation: flash-success 1s infinite;
-    }
+  &.success::before,
+  &.success::after {
+    animation: flash-success 500ms infinite;
+  }
 
-    &.fail {
-      animation: flash-fail 1s infinite;
-    }
+  &.fail::before,
+  &.fail::after {
+    animation: flash-fail 500ms infinite;
   }
 
   &::before {
@@ -78,7 +80,7 @@
   }
 
   50% {
-    border-color: var(--green);
+    border-color: green;
   }
 }
 

@@ -34,6 +34,7 @@ export function verifySignature(payload: PayloadData) {
     collectionAddress: payload.address,
     tokenId: payload.id,
   }
+
   const recoveredData = verifyTypedData(
     Ticket_Domain,
     Ticket_PermitTypes,
