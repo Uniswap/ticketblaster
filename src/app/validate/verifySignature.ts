@@ -39,8 +39,8 @@ export function verifySignature(payload: PayloadData) {
     Ticket_Domain,
     Ticket_PermitTypes,
     value,
-    payload.signature, // this is the sig
+    JSON.parse(payload.signature),
   )
-  console.log('recoveredData', recoveredData)
+
   return recoveredData
 }

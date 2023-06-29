@@ -27,9 +27,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ reason: 'Not found' }, { status: 404 })
   }
 
+  let verifiedAddress = ''
   try {
-    const verifyResult = verifySignature(data)
-    console.log('verifyResult', verifyResult)
+    verifiedAddress = verifySignature(data)
+    console.log('address', address)
   } catch (e) {
     console.error(e)
     return NextResponse.json({ reason: 'Invalid signature' }, { status: 403 })
