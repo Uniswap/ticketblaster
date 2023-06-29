@@ -12,7 +12,7 @@ const enum Status {
 }
 
 export default function Scan() {
-  const [data, setData] = useState<object>()
+  const [data, setData] = useState<string>()
   const [status, setStatus] = useState<Status>(Status.Unknown)
   const resetStatus = useCallback(() => setStatus(Status.Unknown), [])
 
@@ -23,7 +23,7 @@ export default function Scan() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ data }),
+        body: data,
       })
         .then((res) => setStatus(res.ok ? Status.Valid : Status.Invalid))
         .catch(() => setStatus(Status.Error))
