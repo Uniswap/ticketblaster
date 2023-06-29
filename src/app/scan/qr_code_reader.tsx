@@ -79,14 +79,33 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
 
   const toggleUserFacingOrEnvironmentCamera = useCallback(() => {
     assert(video.current, 'video ref is null')
+
     const stream = video.current.srcObject as MediaStream | null
-    if (!stream || !supportsEnvironment) return
+    if (!stream) return
+
     const track = stream.getVideoTracks()[0]
-    const facingMode = track.getSettings().facingMode
-    track.applyConstraints({
-      facingMode: facingMode === 'user' ? 'environment' : 'user',
-    })
-  }, [])
+    const currentFacingMode = track.getSettings().facingMode
+    const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user'
+
+    // Stop the current track
+    track.stop()
+
+    // Request a new stream with the desired facing mode.
+    navigator.mediaDevices
+      .getUserMedia({
+        video: {
+          facingMode: newFacingMode,
+        },
+      })
+      .then((newStream) => {
+        assert(video.current, 'video ref is null')
+        // Replace the stream in the video element.
+        video.current.srcObject = newStream
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }, [video, supportsEnvironment])
 
   useEffect(requestMedia, [requestMedia])
   useAnimationFrame(detect)
