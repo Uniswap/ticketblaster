@@ -39,6 +39,7 @@ export default function Scan() {
         })
           .then((res) => setStatus(res.ok ? Status.Valid : Status.Invalid))
           .catch(() => setStatus(Status.Error))
+          .finally(() => setTimeout(resetStatus, 5000))
       } catch (error) {
         console.warn('Invalid QR code:', error)
         return
@@ -47,16 +48,25 @@ export default function Scan() {
   }, [data])
 
   return (
-    <main className={styles.wrapper}>
+    <main
+      className={[
+        styles.wrapper,
+        status === Status.Valid
+          ? styles.success
+          : [Status.Error, Status.Invalid].includes(status)
+          ? styles.fail
+          : '',
+      ].join(' ')}
+    >
       <h1 className={styles.title}>Scan Ticket</h1>
-
+      <h2>status {status}</h2>
       <QrCodeReader onData={setData} onError={console.warn} />
       <div
         className={[
           styles.scannerHole,
           status === Status.Valid
             ? styles.success
-            : status === Status.Error
+            : [Status.Error, Status.Invalid].includes(status)
             ? styles.fail
             : '',
         ].join(' ')}

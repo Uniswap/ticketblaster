@@ -2,9 +2,9 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
-  --blue: #a2e2ff;
-  --green: #a4ffca;
-  --hot-pink: #fa0f95;
+  --blue: #026CDF;
+  --green: #40B66B;
+  --error: #FF5F52;
   --light-pink: #ffdbdb;
   --orange: #ffcc99;
   --pink: #ffc9df;
@@ -23,7 +23,7 @@
 
 body {
   color: white;
-  background: black;
+  background: var(--blue);
 }
 
 html,

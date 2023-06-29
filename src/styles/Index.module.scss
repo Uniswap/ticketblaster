@@ -9,11 +9,13 @@
 }
 
 .link {
-  color: var(--pink);
+  color: var(--white);
   text-decoration: underline;
   margin: 14px;
 
-  &:hover {
-    color: var(--blue);
+  &:hover,
+  &:focus,
+  &:visited {
+    color: var(--white);
   }
 }
