@@ -25,11 +25,6 @@
   }
 }
 
-.title {
-  font-size: 24px;
-  z-index: 2;
-}
-
 @keyframes flash-success {
 
   0%,
@@ -52,6 +47,26 @@
   50% {
     border-color: var(--error);
   }
+}
+
+.video {
+  position: absolute;
+  height: 100%;
+  z-index: 0;
+}
+
+.title {
+  font-size: 24px;
+  z-index: 2;
+  position: absolute;
+  top: calc(50% - 60vw);
+}
+
+.subtitle {
+  font-size: 18px;
+  z-index: 2;
+  position: absolute;
+  top: calc(50% - 50vw);
 }
 
 .scannerHole {
@@ -102,28 +117,6 @@
     bottom: 0;
     border-top: none;
     border-left: none;
-  }
-}
-
-
-
-.video {
-  width: 100vw;
-  min-height: 480px;
-  z-index: 0;
-}
-
-.metadata {
-  background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 5%;
-  font-size: 16px;
-  padding: 12px;
-  width: 80vw;
-  z-index: 2;
-
-  &>* {
-    margin: 0;
-    text-align: center;
   }
 }
 

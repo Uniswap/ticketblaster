@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import QrCodeReader from './qr_code_reader'
 import styles from './scan.module.scss'
 
@@ -15,9 +15,11 @@ const enum Status {
 export default function Scan() {
   const [data, setData] = useState<string>()
   const [status, setStatus] = useState<Status>(Status.Ready)
+  const [error, setError] = useState<string>()
   const resetStatus = useCallback(() => {
     setData(undefined)
     setStatus(Status.Ready)
+    setError(undefined)
   }, [])
 
   useEffect(() => {
@@ -38,7 +40,11 @@ export default function Scan() {
             id: tokenId,
           }),
         })
-          .then((res) => setStatus(res.ok ? Status.Valid : Status.Invalid))
+          .then(async (res) => {
+            setStatus(res.ok ? Status.Valid : Status.Invalid)
+            const json = await res.json()
+            if (json?.reason) setError(json.reason)
+          })
           .catch(() => setStatus(Status.Error))
           .finally(() => {
             handle = setTimeout(resetStatus, 5000)
@@ -51,6 +57,21 @@ export default function Scan() {
     return () => clearTimeout(handle)
   }, [data, resetStatus])
 
+  const heading = useMemo(() => {
+    switch (status) {
+      case Status.Ready:
+        return 'Scan Ticket'
+      case Status.Pending:
+        return 'Validating'
+      case Status.Valid:
+        return 'Valid Ticket'
+      case Status.Invalid:
+        return 'Invalid Ticket'
+      case Status.Error:
+        return 'Error'
+    }
+  }, [status])
+
   return (
     <main
       className={[
@@ -62,9 +83,10 @@ export default function Scan() {
           : '',
       ].join(' ')}
     >
-      <h1 className={styles.title}>Scan Ticket</h1>
-
       <QrCodeReader onData={setData} onError={console.warn} />
+
+      <h1 className={styles.title}>{heading}</h1>
+      {error && <h2 className={styles.subtitle}>{error}</h2>}
       <div
         className={[
           styles.scannerHole,
@@ -74,17 +96,8 @@ export default function Scan() {
             ? styles.fail
             : '',
         ].join(' ')}
+        onClick={resetStatus}
       />
-
-      <div className={styles.metadata}>
-        {status === Status.Ready && <p>Scan a ticket to validate it</p>}
-        {status === Status.Pending && <p>Validating ticket</p>}
-        {status === Status.Valid && <p onClick={resetStatus}>Valid ticket</p>}
-        {status === Status.Invalid && (
-          <p onClick={resetStatus}>Invalid ticket</p>
-        )}
-        {status === Status.Error && <p onClick={resetStatus}>Error</p>}
-      </div>
     </main>
   )
 }
