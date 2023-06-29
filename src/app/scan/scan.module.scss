@@ -22,10 +22,11 @@
 
 .scannerHole {
   position: absolute;
-  top: 80%;
-  left: 80%;
-  width: 440px;
-  height: 440px;
+  top: 50%;
+  left: 50%;
+  width: calc(60vw - 10px);
+  height: calc(60vw - 10px);
+  transform: translate(-50%, -50%);
   background-color: transparent;
   box-shadow: 0 0 0 10000px rgba(0, 0, 0, 0.7);
   border-radius: 5%;
@@ -44,7 +45,6 @@
 }
 
 .targetBorder {
-  border: 10px solid transparent;
 
   &::before,
   &::after {
