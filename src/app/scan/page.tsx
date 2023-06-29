@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import QrCodeReader from './qr_code_reader'
 
 export default function Scan() {
-  const [data, setData] = useState<{} | Error | null>(null)
+  const [data, setData] = useState<unknown | Error | null>(null)
   const onData = useCallback((data: string) => {
     try {
       /* TODO:

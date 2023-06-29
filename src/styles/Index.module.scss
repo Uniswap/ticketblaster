@@ -1,0 +1,19 @@
+.wrapper {
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: calc(100vh - 40px);
+}
+
+.link {
+  color: var(--pink);
+  text-decoration: underline;
+  margin: 14px;
+
+  &:hover {
+    color: var(--blue);
+  }
+}

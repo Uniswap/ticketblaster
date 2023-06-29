@@ -1,0 +1,54 @@
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+  --blue: #a2e2ff;
+  --green: #a4ffca;
+  --hot-pink: #fa0f95;
+  --light-pink: #ffdbdb;
+  --orange: #ffcc99;
+  --pink: #ffc9df;
+  --purple: #dab5ff;
+  --white: #ffffff;
+  --black: #000;
+  --yellow: #fff6ae;
+  --pink-shadow: 0px 0px 30px 5px hsla(326 96% 52% / 0.2);
+  --rainbow: radial-gradient(
+    142.75% 65.98% at 50% 50%,
+    #ffb9b9 0%,
+    #fff7ad 26.04%,
+    #97fff3 54.17%,
+    #cfbcff 77.08%,
+    #ffb9b9 100%
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+html,
+body {
+  font-size: 24px;
+  font-family: monospace;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
