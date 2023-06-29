@@ -17,6 +17,7 @@
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
     "autoprefixer": "10.4.14",
+    "barcode-detector": "^1.0.3",
     "jotai": "^2.2.1",
     "next": "13.4.7",
     "postcss": "8.4.24",
@@ -25,6 +26,9 @@
     "typescript": "5.1.5"
   },
   "devDependencies": {
+    "@types/node": "20.3.2",
+    "@types/react": "18.2.14",
+    "@types/react-dom": "18.2.6",
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
     "eslint": "^8.43.0",
@@ -37,10 +41,11 @@
     "sass": "^1.63.6"
   },
   "lint-staged": {
-    "**/*/*.{ts,tsx}": [
-      "eslint --fix .",
-      "prettier --write ."
-    ]
+    "**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "!**/types/**": []
   },
   "prettier": {
     "semi": false,
