@@ -40,17 +40,14 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
    * On success, calls {@link onData} with the code's rawValue.
    */
   const detect = useCallback(async () => {
-    assert(video.current, 'video ref is null')
-    assert(canvas.current, 'canvas ref is null')
+    if (!video.current || !canvas.current) return
     const context = canvas.current.getContext('2d', {
       willReadFrequently: true,
     })
     assert(context, 'canvas context is null')
     const srcObject = video.current.srcObject as MediaStream | null
     if (!srcObject) return
-
     const dimensions = srcObject?.getVideoTracks()[0].getSettings()
-
     if (!dimensions) return
     const { width, height } = dimensions
     assert(width && height, 'video has no dimensions')
@@ -79,7 +76,6 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
 
   const toggleUserFacingOrEnvironmentCamera = useCallback(() => {
     assert(video.current, 'video ref is null')
-
     const stream = video.current.srcObject as MediaStream | null
     if (!stream) return
 
