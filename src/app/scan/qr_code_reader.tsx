@@ -4,7 +4,7 @@ import assert from 'assert'
 import useAnimationFrame from '@/hooks/useAnimationFrame'
 import styles from './scan.module.scss'
 
-const DIMENSION = 480
+const SCAN_LINE_SIZE = 512
 
 interface QrCodeProps {
   onData: (data: string) => void
@@ -44,31 +44,45 @@ export default function QrCodeReader({ onData, onError }: QrCodeProps) {
       willReadFrequently: true,
     })
     assert(context, 'canvas context is null')
-    context.clearRect(0, 0, DIMENSION, DIMENSION)
-    context.drawImage(video.current, 0, 0, DIMENSION, DIMENSION)
-    const image = context.getImageData(0, 0, DIMENSION, DIMENSION)
+    const dimensions = (video.current.srcObject as MediaStream | null)
+      ?.getVideoTracks()[0]
+      .getSettings()
+    if (!dimensions) return
+    const { width, height } = dimensions
+    assert(width && height, 'video has no dimensions')
+    context.clearRect(0, 0, SCAN_LINE_SIZE, SCAN_LINE_SIZE)
+    context.drawImage(
+      video.current,
+      0,
+      0,
+      width,
+      height,
+      0,
+      0,
+      SCAN_LINE_SIZE,
+      SCAN_LINE_SIZE,
+    )
+    const image = context.getImageData(0, 0, SCAN_LINE_SIZE, SCAN_LINE_SIZE)
     try {
       const [barcode] = await detector.detect(image)
       if (barcode) onData(barcode.rawValue)
     } catch (error) {
       onError(error)
     }
-  }, [onData, onError, detector])
+  }, [detector, onData, onError])
 
   useEffect(requestMedia, [requestMedia])
   useAnimationFrame(detect)
 
   return (
     <>
-      <canvas hidden ref={canvas} width={DIMENSION} height={DIMENSION} />
-      <video
-        playsInline
-        autoPlay
-        ref={video}
-        width={DIMENSION}
-        height={DIMENSION}
-        className={styles.video}
+      <canvas
+        hidden
+        ref={canvas}
+        width={SCAN_LINE_SIZE}
+        height={SCAN_LINE_SIZE}
       />
+      <video playsInline autoPlay ref={video} className={styles.video} />
     </>
   )
 }
