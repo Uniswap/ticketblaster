@@ -48,16 +48,19 @@ export default function Scan() {
   return (
     <main className={styles.wrapper}>
       <h1 className={styles.title}>Scan Ticket</h1>
-      <div className={styles.scannerOverlay}>
-        <QrCodeReader onData={setData} onError={console.warn} />
-        <div
-          className={[
-            styles.scannerHole,
-            styles.targetBorder,
-            status === Status.Valid ? styles.success : '',
-          ].join(' ')}
-        />
-      </div>
+
+      <QrCodeReader onData={setData} onError={console.warn} />
+      <div
+        className={[
+          styles.scannerHole,
+          status === Status.Valid
+            ? styles.success
+            : status === Status.Error
+            ? styles.fail
+            : '',
+        ].join(' ')}
+      />
+
       <div className={styles.metadata}>
         {status === Status.Unknown && <p>Scan a ticket to validate it</p>}
         {status === Status.Pending && <p>Validating ticket</p>}

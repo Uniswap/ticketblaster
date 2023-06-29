@@ -1,13 +1,16 @@
 .wrapper {
   align-items: center;
-  background-color: var(--black);
   display: flex;
   flex-direction: column;
-  height: 100vh;
   justify-content: center;
   overflow: hidden;
-  position: relative;
-  width: 100vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1;
 
   &>* {
     margin: 0;
@@ -19,55 +22,19 @@
   z-index: 2;
 }
 
-.scannerOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.3);
-  z-index: 1;
-}
-
 .scannerHole {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: calc(75vw - 10px);
+  width: 60vw;
   max-width: 480px;
-  height: calc(75vw - 10px);
+  height: 60vw;
   max-height: 480px;
   transform: translate(-50%, -50%);
   background-color: transparent;
   box-shadow: 0 0 0 10000px rgba(0, 0, 0, 0.7);
   border-radius: 5%;
-}
 
-@keyframes flash-success {
-
-  0%,
-  100% {
-    border-color: transparent;
-  }
-
-  50% {
-    border-color: var(--green);
-  }
-}
-
-@keyframes flash-fail {
-
-  0%,
-  100% {
-    border-color: transparent;
-  }
-
-  50% {
-    border-color: red;
-  }
-}
-
-.targetBorder {
 
   &::before,
   &::after {
@@ -100,6 +67,30 @@
     bottom: 0;
     border-top: none;
     border-left: none;
+  }
+}
+
+@keyframes flash-success {
+
+  0%,
+  100% {
+    border-color: transparent;
+  }
+
+  50% {
+    border-color: var(--green);
+  }
+}
+
+@keyframes flash-fail {
+
+  0%,
+  100% {
+    border-color: transparent;
+  }
+
+  50% {
+    border-color: red;
   }
 }
 
