@@ -14,7 +14,7 @@ export default function Scan() {
        * setData(json)
        */
       setData(data)
-    } catch (e: any) {
+    } catch (e: unknown) {
       setData(e)
     }
   }, [])

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import BarcodeDetector from 'barcode-detector'
+import assert from 'assert'
+import useAnimationFrame from '@/hooks/useAnimationFrame'
+import styles from './scan.module.scss'
 
-const VIDEO_DIMENSION = 480
-const SCAN_DIMENSION = 440
-const SCAN_RATE = 200
+const DIMENSION = 480
 
 interface QrCodeProps {
   onData: (data: string) => void
@@ -13,92 +14,60 @@ interface QrCodeProps {
 export default function QrCodeReader({ onData, onError }: QrCodeProps) {
   const video = useRef<HTMLVideoElement | null>(null)
   const canvas = useRef<HTMLCanvasElement | null>(null)
-  const detector = useMemo(
-    () => new BarcodeDetector({ formats: ['qr_code'] }),
-    [],
-  )
+  const detector = useMemo<BarcodeDetector>( () => new BarcodeDetector({ formats: ['qr_code'] }), [])
 
-  const scan = useCallback(async () => {
-    if (
-      !video.current ||
-      !canvas.current ||
-      !navigator.mediaDevices ||
-      !detector
-    )
-      return
+  /**
+   * Requests a video stream from the user's camera.
+   * On success, sets {@link video.current!.srcObject} to the video stream.
+   */
+  const requestMedia = useCallback(() => {
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
+        assert(video.current, 'video ref is null')
+        video.current.srcObject = stream
+      })
+      .catch(onError)
+  }, [onError])
 
-    const context = canvas.current.getContext('2d')
-    if (!context) return
-
-    context.drawImage(
-      video.current,
-      (VIDEO_DIMENSION - SCAN_DIMENSION) / 2,
-      (VIDEO_DIMENSION - SCAN_DIMENSION) / 2,
-      SCAN_DIMENSION,
-      SCAN_DIMENSION,
-      0,
-      0,
-      SCAN_DIMENSION,
-      SCAN_DIMENSION,
-    )
-
+  /**
+   * Detects QR codes in the {@link video.current!.srcObject} stream.
+   * On success, calls {@link onData} with the code's rawValue.
+   */
+  const detect = useCallback(async () => {
+    assert(video.current, 'video ref is null')
+    assert(canvas.current, 'canvas ref is null')
+    const context = canvas.current.getContext('2d', { willReadFrequently: true })
+    assert(context, 'canvas context is null')
+    context.clearRect(0, 0, DIMENSION, DIMENSION)
+    context.drawImage(video.current, 0, 0, DIMENSION, DIMENSION)
+    const image = context.getImageData(0, 0, DIMENSION, DIMENSION)
     try {
-      const imageData = context.getImageData(
-        0,
-        0,
-        SCAN_DIMENSION,
-        SCAN_DIMENSION,
-      )
-      const [barcode] = await detector.detect(imageData)
+      const [barcode] = await detector.detect(image)
       if (barcode) onData(barcode.rawValue)
     } catch (error) {
       onError(error)
     }
   }, [onData, onError, detector])
 
-  useEffect(() => {
-    if (!navigator.mediaDevices || !video.current) return
-
-    const startVideo = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: VIDEO_DIMENSION, height: VIDEO_DIMENSION },
-        })
-        if (video.current) video.current.srcObject = stream
-      } catch (error) {
-        onError(error)
-      }
-    }
-
-    startVideo()
-
-    return () => {
-      if (video.current && video.current.srcObject) {
-        const tracks = (video.current.srcObject as MediaStream).getTracks()
-        tracks.forEach((track) => track.stop())
-      }
-    }
-  }, [onError])
-
-  useEffect(() => {
-    const intervalId = setInterval(scan, SCAN_RATE)
-    return () => clearInterval(intervalId)
-  }, [scan])
+  useEffect(requestMedia, [requestMedia])
+  useAnimationFrame(detect)
 
   return (
     <>
       <canvas
         hidden
         ref={canvas}
-        width={SCAN_DIMENSION}
-        height={SCAN_DIMENSION}
+        width={DIMENSION}
+        height={DIMENSION}
       />
       <video
         playsInline
         autoPlay
         ref={video}
-        width={VIDEO_DIMENSION}
-        height={VIDEO_DIMENSION}
+        width={DIMENSION}
+        height={DIMENSION}
+        className={styles.video}
       />
     </>
   )
